@@ -4,21 +4,34 @@ import argparse
 import re
 
 def parseDirectory(inputDir, outputDir, baseName=""):
-    targetDir = os.path.join(os.getcwd(), inputDir)
-    print("Target dir is: ", targetDir)
-    files = os.listdir(targetDir)
+    inputPath = os.path.join(os.getcwd(), inputDir)
+    inputFiles = os.listdir(inputPath)
+    parsedFiles = []
     if not baseName:
         baseName = outputDir
 
-    for f in files:
+    for f in inputFiles:
         p1 = re.compile("[abcdefgABCDEFG][#-b]?\d")
         noteName = p1.search(f).group()
 
         p2 = re.compile("\.[^.]+$")
         fileExtension = p2.search(f).group()
         newName = baseName + "_" + noteName + fileExtension
-        print(newName)
+        parsedFiles.append((f, newName))
 
+    return parsedFiles
+
+def copyFiles(parsedFiles, inputDir, outputDir):
+    inputPath = os.path.join(os.getcwd(), inputDir)
+    outputPath = os.path.join(os.getcwd(), outputDir)
+    if not os.path.isdir(outputDir):
+        os.mkdir(outputDir)
+
+    for pair in parsedFiles:
+        src = inputPath + '/' + pair[0]
+        dest = outputPath + '/' + pair[1]
+        command = "cp " + src + ' ' + dest
+        os.system(command)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -34,10 +47,9 @@ def main():
     if not (args.directory and args.output):
         print("You need an input and output")
 
-    print(args.output)
 
-    parseDirectory(args.directory, args.output, args.name)
-
+    parsedFiles = parseDirectory(args.directory, args.output, args.name)
+    copyFiles(parsedFiles, args.directory, args.output)
 
 
 if __name__=="__main__":
